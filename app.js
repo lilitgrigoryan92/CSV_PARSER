@@ -7,27 +7,6 @@ const totalCPUs = require("os").cpus().length;
 
 const dirPath = path.resolve(__dirname, "./files.csv");
 
-
-if (cluster.isMaster) {
-  console.log(`Master ${process.pid} is running`);
-
-  for (let i = 0; i < totalCPUs; i++) {
-    cluster.fork();
-  }
-
-  cluster.on("exit", (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} killed`);
-    cluster.fork();
-  })
-}else {
-    readFilesCsv(dirPath)
-      .then(({ count, duration }) => {
-        console.log(`Count is ${count}`);
-        console.log(`Duration is ${duration} ms`);
-      })
-      .catch((error) => console.error(error.message));
-  }
-
 function readFilesCsv(dirPath){
     return new Promise((resolve,reject)=>{
         if(!dirPath){
@@ -70,7 +49,7 @@ fs.createReadStream(input)
   .on('end', () => {
     writeFile(output,JSON.stringify(results,undefined,2))
   })
-    .on("err",(error)=> reject(error))
+    .on("error",(error)=> reject(error))
   });
 
 const end=Date.now()
@@ -80,4 +59,25 @@ resolve({count,duration})
     })
     
 }
+if (cluster.isMaster) {
+  console.log(`Master ${process.pid} is running`);
+
+  for (let i = 0; i < totalCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on("exit", (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} killed`);
+    cluster.fork();
+  })
+}else {
+    readFilesCsv(dirPath)
+      .then(({ count, duration }) => {
+        console.log(`Count is ${count}`);
+        console.log(`Duration is ${duration} ms`);
+      })
+      .catch((error) => console.error(error.message));
+  }
+
+
 
