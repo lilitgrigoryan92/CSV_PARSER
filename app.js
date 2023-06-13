@@ -6,7 +6,7 @@ const { writeFile } = require('fs/promises');
 
 const dirPath = path.resolve(__dirname, "./files.csv");
 
-async function readCSVFiles(dirPath) {
+ function readCSVFiles(dirPath) {
   return new Promise((resolve, reject) => {
     if (!dirPath) {
       reject(new Error('There arent directory'));
